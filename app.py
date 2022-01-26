@@ -7,9 +7,29 @@ from pyannote.core import notebook, Segment
 import io
 import base64
 
+import streamlit.components.v1 as components
+
+
 from matplotlib.backends.backend_agg import RendererAgg
 
 _lock = RendererAgg.lock
+
+import base64
+import numpy as np
+import scipy.io.wavfile
+from typing import Text
+def to_base64(waveform: np.ndarray, sample_rate: int = 16000) -> Text:
+    """Convert waveform to base64 data"""
+    with io.BytesIO() as content:
+        scipy.io.wavfile.write(content, sample_rate, waveform)
+        content.seek(0)
+        b64 = base64.b64encode(content.read()).decode()
+        b64 = f"data:audio/x-wav;base64,{b64}"
+    return b64
+
+def normalize(waveform: np.ndarray) -> np.ndarray:
+    """Normalize waveform for better display in Prodigy UI"""
+    return waveform / (np.max(np.abs(waveform)) + 1e-8)
 
 PYANNOTE_LOGO = "https://avatars.githubusercontent.com/u/7559051?s=400&v=4"
 EXCERPT = 30.0
@@ -17,6 +37,7 @@ EXCERPT = 30.0
 st.set_page_config(
     page_title="pyannote.audio pretrained pipelines",
     page_icon=PYANNOTE_LOGO)
+
 
 st.sidebar.image(PYANNOTE_LOGO)
 
@@ -51,19 +72,38 @@ if uploaded_file is not None:
     with st.spinner('Running pipeline...'):
         output = pipeline(file)
 
-    with _lock:
 
-        notebook.reset()
-        notebook.crop = Segment(0, min(duration, EXCERPT))
+    html_template = """
+    <script src="https://unpkg.com/wavesurfer.js"></script>
+    <script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.regions.min.js"></script>
+    <div id="waveform"></div>    
+    <script type="text/javascript">
+        
+        var wavesurfer = WaveSurfer.create({
+            container: '#waveform',
+            plugins: [
+                WaveSurfer.regions.create({})
+            ]
+        });
 
-        fig, ax = plt.subplots(nrows=1, ncols=1)
-        fig.set_figwidth(12)
-        fig.set_figheight(2.0)
-        notebook.plot_annotation(output, ax=ax, time=True, legend=True)
+        wavesurfer.load('BASE64');
+        wavesurfer.on('ready', function () {
+            wavesurfer.play();
+        });
 
-        plt.tight_layout()
-        st.pyplot(fig=fig, clear_figure=True)
-        plt.close(fig)
+        REGIONS
+    </script>
+    """
+
+    colors = ["#ffd700", "#00ffff", "#ff00ff", "#00ff00", "#9932cc", "#00bfff", "#ff7f50", "#66cdaa"]
+    label2color = {label: color for label, color in zip(output.labels(), colors)}
+
+    BASE64 = to_base64(normalize(waveform.numpy().T))
+    REGIONS = "".join([
+        f"wavesurfer.addRegion({{start: {segment.start:g}, end: {segment.end:g}, color: '{label2color[label]}'}});" 
+        for segment, track, label in output.itertracks(yield_label=True)])
+    html = html_template.replace('BASE64', BASE64).replace('REGIONS', REGIONS)
+    components.html(html, height=200)
 
     with io.StringIO() as fp:
         output.write_rttm(fp)
