@@ -116,7 +116,7 @@ if uploaded_file is not None:
         ]
     )
     html = html_template.replace("BASE64", BASE64).replace("REGIONS", REGIONS)
-    components.html(html, height=300)
+    components.html(html, height=280, scrolling=True)
 
     with io.StringIO() as fp:
         output.write_rttm(fp)
