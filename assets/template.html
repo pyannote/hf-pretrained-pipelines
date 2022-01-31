@@ -1,0 +1,139 @@
+<script src="https://unpkg.com/wavesurfer.js"></script>
+<script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.regions.min.js"></script>
+<script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.timeline.min.js"></script>
+<style>
+	.pyannote-region {
+		left: 1px;
+		color: #000;
+		bottom: 0;
+		display: block;
+		padding: 0 3px;
+		z-index: 10;
+		position: absolute;
+		font-size: 0.7em;
+		background: #ffe184;
+		font-weight: bold;
+		font-family: "Roboto Condensed", "Arial Narrow", sans-serif;
+		user-select: none;
+		text-transform: uppercase;
+	}
+</style>
+<div id="waveform"></div>
+<div id="timeline"></div>
+<div><button onclick="play()" id="ppb">Play</button><div>
+<script type="text/javascript">
+	function formatTimeCallback(seconds, pxPerSec) {
+		seconds = Number(seconds);
+		var minutes = Math.floor(seconds / 60);
+		seconds = seconds % 60;
+		var secondsStr = Math.round(seconds).toString();
+		if (pxPerSec >= 25 * 10) {
+			secondsStr = seconds.toFixed(2);
+		} else if (pxPerSec >= 25 * 1) {
+			secondsStr = seconds.toFixed(1);
+		}
+		if (minutes > 0) {
+			if (seconds < 10) {
+				secondsStr = '0' + secondsStr;
+			}
+			return `${minutes}:${secondsStr}`;
+		}
+		return secondsStr;
+	}
+
+	function timeInterval(pxPerSec){
+		var retval = 1;
+		if (pxPerSec >= 25 * 100) {
+			retval = 0.01;
+		} else if (pxPerSec >= 25 * 40) {
+			retval = 0.025;
+		} else if (pxPerSec >= 25 * 10) {
+			retval = 0.1;
+		} else if (pxPerSec >= 25 * 4) {
+			retval = 0.25;
+		} else if (pxPerSec >= 25) {
+			retval = 1;
+		} else if (pxPerSec * 5 >= 25) {
+			retval = 5;
+		} else if (pxPerSec * 15 >= 25) {
+			retval = 15;
+		} else {
+			retval = Math.ceil(0.5 / pxPerSec) * 60;
+		}
+		return retval;
+	}
+
+	function primaryLabelInterval(pxPerSec) {
+		var retval = 1;
+		if (pxPerSec >= 25 * 100) {
+			retval = 10;
+		} else if (pxPerSec >= 25 * 40) {
+			retval = 4;
+		} else if (pxPerSec >= 25 * 10) {
+			retval = 10;
+		} else if (pxPerSec >= 25 * 4) {
+			retval = 4;
+		} else if (pxPerSec >= 25) {
+			retval = 1;
+		} else if (pxPerSec * 5 >= 25) {
+			retval = 5;
+		} else if (pxPerSec * 15 >= 25) {
+			retval = 15;
+		} else {
+			retval = Math.ceil(0.5 / pxPerSec) * 60;
+		}
+		return retval;
+	}
+
+	function secondaryLabelInterval(pxPerSec) {
+		return Math.floor(10 / timeInterval(pxPerSec));
+	}
+
+	var wavesurfer = WaveSurfer.create({
+		container: '#waveform',
+		barGap: 2,
+		barHeight: 1,		
+ 		barWidth: 3,
+		plugins: [
+			WaveSurfer.regions.create({}),
+			WaveSurfer.timeline.create({
+				container: "#timeline",
+				formatTimeCallback: formatTimeCallback,
+				timeInterval: timeInterval,
+				primaryLabelInterval: primaryLabelInterval,
+				secondaryLabelInterval: secondaryLabelInterval,
+				primaryColor: 'blue',
+				secondaryColor: 'red',
+				primaryFontColor: 'blue',
+				secondaryFontColor: 'red'
+                        })
+		]
+	});
+	wavesurfer.load('BASE64');
+	wavesurfer.on('ready', function () {
+		wavesurfer.play(); 
+	});
+	wavesurfer.on('play',function() {
+		document.getElementById('ppb').innerHTML = "Pause";
+	});
+	wavesurfer.on('pause',function() {
+		document.getElementById('ppb').innerHTML = "Play";
+	});
+	REGIONS
+	document.addEventListener('keyup', event => {
+		if (event.code === 'Space') {
+			play();
+		}
+	})
+	function play(){
+		wavesurfer.isPlaying() ? wavesurfer.pause() : wavesurfer.play();
+	}
+	function addRegionLabel(e,t){
+		var s = e.element;
+		var l = s.appendChild(document.createElement("span"));
+		l.textContent = t;
+		l.style.color = "rgb(0, 0, 0)";
+		l.style.background = e.color;
+		e.label = t;
+	}
+</script>
