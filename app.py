@@ -111,12 +111,12 @@ if uploaded_file is not None:
     BASE64 = to_base64(waveform.numpy().T)
     REGIONS = "".join(
         [
-            f"var re = wavesurfer.addRegion({{start: {segment.start:g}, end: {segment.end:g}, color: '{label2color[label]}', resize : false, drag : false}}); addRegionLabel(re,'{label}');"
+            f"var re = wavesurfer.addRegion({{start: {segment.start:g}, end: {segment.end:g}, color: '{label2color[label]}', resize : false, drag : false}}); addLegend('{label}', '{label2color[label]}');"
             for segment, _, label in output.itertracks(yield_label=True)
         ]
     )
     html = html_template.replace("BASE64", BASE64).replace("REGIONS", REGIONS)
-    components.html(html, height=200)
+    components.html(html, height=300)
 
     with io.StringIO() as fp:
         output.write_rttm(fp)
