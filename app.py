@@ -83,7 +83,8 @@ if uploaded_file is not None:
     waveform, sample_rate = audio.crop(
         uploaded_file, Segment(0, min(duration, EXCERPT))
     )
-    file = {"waveform": waveform, "sample_rate": sample_rate, "uri": uploaded_file.name}
+    uri = "".join(uploaded_file.name.split())
+    file = {"waveform": waveform, "sample_rate": sample_rate, "uri": uri}
 
     with st.spinner(f"Processing first {EXCERPT:g} seconds..."):
         output = pipeline(file)
