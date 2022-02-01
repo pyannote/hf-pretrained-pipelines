@@ -93,8 +93,9 @@ if uploaded_file is not None:
     with st.spinner("Running pipeline..."):
         output = pipeline(file)
 
-    with open('assets/template.html') as html:
+    with open('assets/template.html') as html, open('assets/style.css') as css:
         html_template = html.read()
+        st.markdown('<style>{}</style>'.format(css.read()), unsafe_allow_html=True)
 
     colors = [
         "#ffd70033",
@@ -109,14 +110,19 @@ if uploaded_file is not None:
     label2color = {label: color for label, color in zip(output.labels(), colors)}
 
     BASE64 = to_base64(waveform.numpy().T)
-    REGIONS = "".join(
-        [
-            f"var re = wavesurfer.addRegion({{start: {segment.start:g}, end: {segment.end:g}, color: '{label2color[label]}', resize : false, drag : false}}); addLegend('{label}', '{label2color[label]}');"
-            for segment, _, label in output.itertracks(yield_label=True)
-        ]
-    )
+
+    REGIONS = ""
+    LEGENDS = ""
+    labels=[]
+    for segment, _, label in output.itertracks(yield_label=True):
+        REGIONS += f"var re = wavesurfer.addRegion({{start: {segment.start:g}, end: {segment.end:g}, color: '{label2color[label]}', resize : false, drag : false}});"
+        if not label in labels:
+            LEGENDS += f"<li><span style='background-color:{label2color[label]}'></span>{label}</li>"
+            labels.append(label)
+
     html = html_template.replace("BASE64", BASE64).replace("REGIONS", REGIONS)
-    components.html(html, height=280, scrolling=True)
+    st.markdown("<div style='overflow : auto'><ul class='legend'>"+LEGENDS+"</ul></div>", unsafe_allow_html=True)
+    components.html(html, height=250, scrolling=True)
 
     with io.StringIO() as fp:
         output.write_rttm(fp)

@@ -1,12 +1,6 @@
 <script src="https://unpkg.com/wavesurfer.js"></script>
 <script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.regions.min.js"></script>
 <script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.timeline.min.js"></script>
-<style>
-	.legend { list-style: none; margin: 0; padding: 0}
-	.legend li { float: left; margin-right: 10px; font-family : "Lato", "Trebuchet MS", Roboto, Helvetica, Arial, sans-serif; line-height: 1.8; font-size:20px;color : #444}
-	.legend span { border: 1px solid #ccc; float: left; width: 30px; height: 30px; margin: 2px; }
-</style>
-<div style="overflow : auto"><ul class="legend" id="legend"></ul></div>
 <br>
 <div id="waveform"></div>
 <div id="timeline"></div>
@@ -48,17 +42,5 @@
 	})
 	function play(){
 		wavesurfer.isPlaying() ? wavesurfer.pause() : wavesurfer.play();
-	}
-	function addLegend(label, color){
-		if(! labels.includes(label)){
-			labels.push(label);
-			var ul = document.getElementById("legend");
-			var span = document.createElement("span");
-			span.style.backgroundColor = color;
-			var li = document.createElement("li");
-			li.appendChild(span);
-			li.appendChild(document.createTextNode(label));
-			ul.appendChild(li);
-		}
 	}
 </script>
