@@ -1,0 +1,3 @@
+.legend { list-style: none; margin: 0; padding: 0}
+.legend li { float: left; margin : auto; margin-right: 10px; font-family : "Lato", "Trebuchet MS", Roboto, Helvetica, Arial, sans-serif; line-height: 1.8; font-size:20px;color : #444}
+.legend span { border: 1px solid #ccc; float: left; width: 30px; height: 30px; margin: 2px; }

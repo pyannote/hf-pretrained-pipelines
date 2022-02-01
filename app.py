@@ -93,50 +93,36 @@ if uploaded_file is not None:
     with st.spinner("Running pipeline..."):
         output = pipeline(file)
 
-    # THIS HTML/JS TEMPLATE SHOULD BE LOADED FROM A FILE (e.g. /assets/template.html)
-    html_template = """
-    <script src="https://unpkg.com/wavesurfer.js"></script>
-    <script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.regions.min.js"></script>
-    <div id="waveform"></div>    
-    <script type="text/javascript">
-        
-        var wavesurfer = WaveSurfer.create({
-            container: '#waveform',
-            plugins: [
-                WaveSurfer.regions.create({})
-            ]
-        });
-
-        wavesurfer.load('BASE64');
-        wavesurfer.on('ready', function () {
-            wavesurfer.play();
-        });
-
-        REGIONS
-    </script>
-    """
+    with open('assets/template.html') as html, open('assets/style.css') as css:
+        html_template = html.read()
+        st.markdown('<style>{}</style>'.format(css.read()), unsafe_allow_html=True)
 
     colors = [
-        "#ffd700",
-        "#00ffff",
-        "#ff00ff",
-        "#00ff00",
-        "#9932cc",
-        "#00bfff",
-        "#ff7f50",
-        "#66cdaa",
+        "#ffd70033",
+        "#00ffff33",
+        "#ff00ff33",
+        "#00ff0033",
+        "#9932cc33",
+        "#00bfff33",
+        "#ff7f5033",
+        "#66cdaa33",
     ]
     label2color = {label: color for label, color in zip(output.labels(), colors)}
 
     BASE64 = to_base64(waveform.numpy().T)
-    REGIONS = "".join(
-        [
-            f"wavesurfer.addRegion({{start: {segment.start:g}, end: {segment.end:g}, color: '{label2color[label]}'}});"
-            for segment, _, label in output.itertracks(yield_label=True)
-        ]
-    )
+
+    REGIONS = ""
+    LEGENDS = ""
+    labels=[]
+    for segment, _, label in output.itertracks(yield_label=True):
+        REGIONS += f"var re = wavesurfer.addRegion({{start: {segment.start:g}, end: {segment.end:g}, color: '{label2color[label]}', resize : false, drag : false}});"
+        if not label in labels:
+            LEGENDS += f"<li><span style='background-color:{label2color[label]}'></span>{label}</li>"
+            labels.append(label)
+
     html = html_template.replace("BASE64", BASE64).replace("REGIONS", REGIONS)
-    components.html(html, height=200)
+    st.markdown("<div style='overflow : auto'><ul class='legend'>"+LEGENDS+"</ul></div>", unsafe_allow_html=True)
+    components.html(html, height=250, scrolling=True)
 
     with io.StringIO() as fp:
         output.write_rttm(fp)
