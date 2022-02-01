@@ -107,7 +107,9 @@ if uploaded_file is not None:
         "#ff7f5033",
         "#66cdaa33",
     ]
-    label2color = {label: color for label, color in zip(output.labels(), colors)}
+    num_colors = len(colors)
+
+    label2color = {label: colors[k % num_colors] for k, label in enumerate(sorted(output.labels()))}
 
     BASE64 = to_base64(waveform.numpy().T)
 
