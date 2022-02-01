@@ -56,13 +56,8 @@ st.set_page_config(
 
 st.sidebar.image(PYANNOTE_LOGO)
 
-st.markdown(
-    f"""
-# 🎹 Pretrained pipelines
-
-Upload an audio file and the first {EXCERPT:g} seconds will be processed automatically.
-"""
-)
+st.markdown("""# 🎹 Pretrained pipelines
+""")
 
 PIPELINES = [
     p.modelId
@@ -72,12 +67,12 @@ PIPELINES = [
 
 audio = Audio(sample_rate=16000, mono=True)
 
-selected_pipeline = st.selectbox("", PIPELINES, index=0)
+selected_pipeline = st.selectbox("Select a pipeline", PIPELINES, index=0)
 
 with st.spinner("Loading pipeline..."):
     pipeline = Pipeline.from_pretrained(selected_pipeline)
 
-uploaded_file = st.file_uploader("")
+uploaded_file = st.file_uploader("Choose an audio file")
 if uploaded_file is not None:
 
     try:
@@ -90,7 +85,7 @@ if uploaded_file is not None:
     )
     file = {"waveform": waveform, "sample_rate": sample_rate, "uri": uploaded_file.name}
 
-    with st.spinner("Running pipeline..."):
+    with st.spinner(f"Processing first {EXCERPT:g} seconds..."):
         output = pipeline(file)
 
     with open('assets/template.html') as html, open('assets/style.css') as css:
@@ -123,16 +118,26 @@ if uploaded_file is not None:
             labels.append(label)
 
     html = html_template.replace("BASE64", BASE64).replace("REGIONS", REGIONS)
-    st.markdown("<div style='overflow : auto'><ul class='legend'>"+LEGENDS+"</ul></div>", unsafe_allow_html=True)
     components.html(html, height=250, scrolling=True)
+    st.markdown("<div style='overflow : auto'><ul class='legend'>"+LEGENDS+"</ul></div>", unsafe_allow_html=True)
+
+    st.markdown("---")
 
     with io.StringIO() as fp:
         output.write_rttm(fp)
         content = fp.getvalue()
 
         b64 = base64.b64encode(content.encode()).decode()
-        href = f'<a download="{output.uri}.rttm" href="data:file/text;base64,{b64}">Download as RTTM</a>'
+        href = f'Download as <a download="{output.uri}.rttm" href="data:file/text;base64,{b64}">RTTM</a> or run it on the whole {int(duration):d}s file:'
         st.markdown(href, unsafe_allow_html=True)
+
+    code = f"""
+    from pyannote.audio import Pipeline
+    pipeline = Pipeline.from_pretrained("{selected_pipeline}")
+    output = pipeline("{uploaded_file.name}")
+    """
+    st.code(code, language='python')
+
 
 
 st.sidebar.markdown(
