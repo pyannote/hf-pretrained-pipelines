@@ -70,7 +70,7 @@ audio = Audio(sample_rate=16000, mono=True)
 selected_pipeline = st.selectbox("Select a pipeline", PIPELINES, index=0)
 
 with st.spinner("Loading pipeline..."):
-    pipeline = Pipeline.from_pretrained(selected_pipeline)
+    pipeline = Pipeline.from_pretrained(selected_pipeline, use_auth_token=st.secrets["PYANNOTE_TOKEN"])
 
 uploaded_file = st.file_uploader("Choose an audio file")
 if uploaded_file is not None:
