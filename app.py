@@ -21,9 +21,16 @@
 # SOFTWARE.
 
 
+import torch
+
+print(f"Is CUDA available: {torch.cuda.is_available()}")
+# True
+print(f"CUDA device: {torch.cuda.get_device_name(torch.cuda.current_device())}")
+# Tesla T4
+
+
 import io
 import base64
-import torch
 import numpy as np
 import scipy.io.wavfile
 from typing import Text
