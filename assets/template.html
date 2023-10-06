@@ -1,46 +1,41 @@
-<script src="https://unpkg.com/wavesurfer.js"></script>
-<script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.regions.min.js"></script>
-<script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.timeline.min.js"></script>
-<br>
-<div id="waveform"></div>
-<div id="timeline"></div>
-<br>
-<div><button onclick="play()" id="ppb">Play</button><div>
-<script type="text/javascript">
-	var labels=[];
-	var wavesurfer = WaveSurfer.create({
-		container: '#waveform',
-		barGap: 2,
-		barHeight: 3,		
- 		barWidth: 3,
-		barRadius: 2,
-		plugins: [
-			WaveSurfer.regions.create({}),
-			WaveSurfer.timeline.create({
-				container: "#timeline",
-				notchPercentHeight: 40,
-				primaryColor: "#444",
-				primaryFontColor: "#444"
-                        })
-		]
-	});
-	wavesurfer.load('BASE64');
-	wavesurfer.on('ready', function () {
-		wavesurfer.play(); 
-	});
-	wavesurfer.on('play',function() {
-		document.getElementById('ppb').innerHTML = "Pause";
-	});
-	wavesurfer.on('pause',function() {
-		document.getElementById('ppb').innerHTML = "Play";
-	});
+<script type="module">
+import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
+import RegionsPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.esm.js'
+
+
+var labels=[];
+const wavesurfer = WaveSurfer.create({
+	container: '#waveform',
+	barGap: 2,
+	barHeight: 3,		
+ 	barWidth: 3,
+	barRadius: 2,
+});
+
+const regions = wavesurfer.registerPlugin(RegionsPlugin.create())
+
+wavesurfer.load('BASE64');
+wavesurfer.on('ready', function () {
+	wavesurfer.play(); 
+});
+
+wavesurfer.on('decode', function () {
+
 	REGIONS
-	document.addEventListener('keyup', event => {
-		if (event.code === 'Space') {
-			play();
-		}
-	})
-	function play(){
-		wavesurfer.isPlaying() ? wavesurfer.pause() : wavesurfer.play();
-	}
+
+	wavesurfer.play();
+
+});
+
+wavesurfer.on('click', () => {
+	play();
+});
+
+
+function play(){
+	wavesurfer.isPlaying() ? wavesurfer.pause() : wavesurfer.play();
+}
+
 </script>
+<div id="waveform"></div>
+
