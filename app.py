@@ -22,13 +22,6 @@
 
 
 import torch
-
-print(f"Is CUDA available: {torch.cuda.is_available()}")
-# True
-print(f"CUDA device: {torch.cuda.get_device_name(torch.cuda.current_device())}")
-# Tesla T4
-
-
 import io
 import base64
 import numpy as np
@@ -54,7 +47,7 @@ def to_base64(waveform: np.ndarray, sample_rate: int = 16000) -> Text:
 
 
 PYANNOTE_LOGO = "https://avatars.githubusercontent.com/u/7559051?s=400&v=4"
-EXCERPT = 30.0
+EXCERPT = 600.0
 
 st.set_page_config(page_title="pyannote pretrained pipelines", page_icon=PYANNOTE_LOGO)
 
