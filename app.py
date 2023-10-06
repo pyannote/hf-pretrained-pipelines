@@ -47,7 +47,7 @@ def to_base64(waveform: np.ndarray, sample_rate: int = 16000) -> Text:
 
 
 PYANNOTE_LOGO = "https://avatars.githubusercontent.com/u/7559051?s=400&v=4"
-EXCERPT = 600.0
+EXCERPT = 120.0
 
 st.set_page_config(page_title="pyannote pretrained pipelines", page_icon=PYANNOTE_LOGO)
 
@@ -101,7 +101,7 @@ if uploaded_file is not None:
     uri = "".join(uploaded_file.name.split())
     file = {"waveform": waveform, "sample_rate": sample_rate, "uri": uri}
 
-    with st.spinner(f"Processing {EXCERPT:g} seconds..."):
+    with st.spinner(f"Processing first {EXCERPT:g} seconds of the file..."):
         output = pipeline(file)
 
     with open("assets/template.html") as html, open("assets/style.css") as css:
