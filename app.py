@@ -66,7 +66,7 @@ Make the most of [pyannote](https://github.com/pyannote) thanks to our [consulti
 
 
 PIPELINES = [
-    "pyannote/speaker-diarization-3.0",
+    "pyannote/speaker-diarization-3.1",
 ]
 
 audio = Audio(sample_rate=16000, mono=True)
