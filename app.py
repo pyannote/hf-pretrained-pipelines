@@ -30,7 +30,9 @@ from typing import Text
 import streamlit as st
 from pyannote.audio import Pipeline
 from pyannote.audio import Audio
+from pyannote.audio.pipelines.utils.hook import TimingHook
 from pyannote.core import Segment
+
 
 import streamlit.components.v1 as components
 
@@ -47,7 +49,7 @@ def to_base64(waveform: np.ndarray, sample_rate: int = 16000) -> Text:
 
 
 PYANNOTE_LOGO = "https://avatars.githubusercontent.com/u/7559051?s=400&v=4"
-EXCERPT = 120.0
+EXCERPT = 120
 
 st.set_page_config(page_title="pyannote pretrained pipelines", page_icon=PYANNOTE_LOGO)
 
@@ -95,14 +97,28 @@ if uploaded_file is not None:
     except RuntimeError as e:
         st.error(e)
         st.stop()
-    waveform, sample_rate = audio.crop(
-        uploaded_file, Segment(0, min(duration, EXCERPT))
+
+    spinner_message = (
+        f"Processing {duration:.0f}s file... "
+        if duration < EXCERPT
+        else f"Processing first {EXCERPT:.0f}s of file..."
     )
+
+    duration = min(duration, EXCERPT)
+    waveform, sample_rate = audio.crop(uploaded_file, Segment(0, duration))
     uri = "".join(uploaded_file.name.split())
     file = {"waveform": waveform, "sample_rate": sample_rate, "uri": uri}
 
-    with st.spinner(f"Processing first {EXCERPT:g} seconds of the file..."):
-        output = pipeline(file)
+    with st.spinner(spinner_message):
+        with TimingHook() as hook:
+            output = pipeline(file, hook=hook)
+
+    processing_time = file["timing"]["total"]
+    faster_than_real_time = duration / processing_time
+    st.success(
+        f"Processed {duration:.0f}s of audio in {processing_time:.1f}s ({faster_than_real_time:.1f}x faster than real-time)",
+        icon="✅",
+    )
 
     with open("assets/template.html") as html, open("assets/style.css") as css:
         html_template = html.read()
